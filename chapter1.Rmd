@@ -7,7 +7,7 @@
 It is a brilliant opportunity to take this course. I'm especially looking forward to learning how to utilize R and GitHub efficiently in my research process. 
 I found the course through the Weboodi course catalog that lists mandatory interdisciplinary Ph.D. courses. 
 
-[Link to the GitHub page](https://martkaila.github.io/IODS-project/)
+[Link to the GitHub repository page](https://github.com/martkaila/IODS-project)
 
 
 ```{r}
