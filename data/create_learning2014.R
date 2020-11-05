@@ -36,7 +36,8 @@ data$Surf <- (data$SU02+data$SU10+data$SU18+data$SU26 + data$SU05+data$SU13+data
 # Scale attitude 
 data$Attitude <- data$Attitude/10 
 
-#data$gender <- ifelse(data$gender == "M", 0, ifelse(data$gender == "F", 1, 2))
+data$gender <- ifelse(data$gender == "M", 0, ifelse(data$gender == "F", 1, 2))
+
 # Pick the variables we want to use and get rid of the observations in which points == 0
 analysisData <- data %>%
   filter(Points > 0) %>%

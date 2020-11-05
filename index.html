@@ -452,7 +452,7 @@ summary {
 <pre class="r"><code># This is a so-called &quot;R chunk&quot; where you can write R code.
 
 date()</code></pre>
-<pre><code>## [1] &quot;Thu Nov  5 14:34:51 2020&quot;</code></pre>
+<pre><code>## [1] &quot;Thu Nov  5 14:54:43 2020&quot;</code></pre>
 <p>The text continues here.</p>
 <hr />
 </div>
@@ -460,20 +460,20 @@ date()</code></pre>
 <h1>Chapter 2</h1>
 <p>Today is</p>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Thu Nov  5 14:34:51 2020&quot;</code></pre>
+<pre><code>## [1] &quot;Thu Nov  5 14:54:43 2020&quot;</code></pre>
 <div id="getting-the-data-and-descriptive-statistics" class="section level3">
 <h3>1. Getting the Data and Descriptive Statistics</h3>
 <p>Let’s start by reading the data in R.</p>
 <pre class="r"><code>learning2014 &lt;- read.csv(&quot;/Users/marttikaila/IODS-project/data/learning2014.csv&quot;,row.names = 1)</code></pre>
 <p>Lets then provide some descriptive statistics</p>
 <pre class="r"><code>summary(learning2014)</code></pre>
-<pre><code>##     Attitude        gender               Age             Stra      
-##  Min.   :1.400   Length:166         Min.   :17.00   Min.   :1.250  
-##  1st Qu.:2.600   Class :character   1st Qu.:21.00   1st Qu.:2.625  
-##  Median :3.200   Mode  :character   Median :22.00   Median :3.188  
-##  Mean   :3.143                      Mean   :25.51   Mean   :3.121  
-##  3rd Qu.:3.700                      3rd Qu.:27.00   3rd Qu.:3.625  
-##  Max.   :5.000                      Max.   :55.00   Max.   :5.000  
+<pre><code>##     Attitude         gender            Age             Stra      
+##  Min.   :1.400   Min.   :0.0000   Min.   :17.00   Min.   :1.250  
+##  1st Qu.:2.600   1st Qu.:0.0000   1st Qu.:21.00   1st Qu.:2.625  
+##  Median :3.200   Median :1.0000   Median :22.00   Median :3.188  
+##  Mean   :3.143   Mean   :0.6627   Mean   :25.51   Mean   :3.121  
+##  3rd Qu.:3.700   3rd Qu.:1.0000   3rd Qu.:27.00   3rd Qu.:3.625  
+##  Max.   :5.000   Max.   :1.0000   Max.   :55.00   Max.   :5.000  
 ##       Deep           Points           Surf      
 ##  Min.   :1.583   Min.   : 7.00   Min.   :1.583  
 ##  1st Qu.:3.333   1st Qu.:19.00   1st Qu.:2.417  
