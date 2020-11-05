@@ -1,13 +1,151 @@
-# Insert chapter 2 title here
+# Chapter 2
 
-*Describe the work you have done this week and summarize your learning.*
-
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
-
+Today is 
 ```{r}
 date()
 ```
+### 1. Getting the Data and Descriptive Statistics 
+Let's start by reading the data in R. 
 
-Here we go again...
+```{r}
+learning2014 <- read.csv("/Users/marttikaila/IODS-project/data/learning2014.csv",row.names = 1)
+```
+
+Lets then provide some descriptive statistics 
+```{r}
+summary(learning2014)
+```
+
+Based on the descriptive statistics, the sample contains relatively young people, and most individuals are female. Since I coded the gender variable as a binary variable that takes value one if the person is female, we can conclude based on the mean of gender variable that around 66 % of the sample are women. On average, an individual's age is about 22.5 years. However, a median person in the sample is 3.5 years younger.  
+
+### 2. A Graphical Overview
+
+Let's start the graphical overview by plotting the histograms of our variables. 
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+
+age <-  ggplot(learning2014, aes(x = Age)) +
+  geom_histogram(aes(y = ..density..), 
+                  color = "grey30", fill = "darkorange") +
+  geom_density(alpha = .3, fill = "darkorange")
+
+points <-  ggplot(learning2014, aes(x = Points)) +
+  geom_histogram(aes(y = ..density..), 
+                 color = "grey30", fill = "darkorange") +
+  geom_density(alpha = .3, fill = "darkorange")
+
+surf <-  ggplot(learning2014, aes(x = Surf)) +
+  geom_histogram(aes(y = ..density..), 
+                 color = "grey30", fill = "darkorange") +
+  geom_density(alpha = .3, fill = "darkorange")
+
+attitude <-  ggplot(learning2014, aes(x = Attitude)) +
+  geom_histogram(aes(y = ..density..), 
+                 color = "grey30", fill = "darkorange") +
+  geom_density(alpha = .3, fill = "darkorange")
+
+stra <-  ggplot(learning2014, aes(x = Stra)) +
+  geom_histogram(aes(y = ..density..), 
+                 color = "grey30", fill = "darkorange") +
+  geom_density(alpha = .3, fill = "darkorange")
+
+deep <-  ggplot(learning2014, aes(x = Deep)) +
+  geom_histogram(aes(y = ..density..), 
+                 color = "grey30", fill = "darkorange") +
+  geom_density(alpha = .3, fill = "darkorange")
+
+
+grid.arrange(age, points, surf, attitude, stra, deep  , ncol = 2)
+
+```
+
+Based on the histograms, we can state that most of the variables have a sort of nice bell-shaped distribution. Using eyeballing statistics, it seems that only the distributions of age and exam scores variables are a bit more skewed. Age distribution has a long right tail. Also, the distribution of points is leaning more towards higher points.
+
+Let then create some scatterplots that show the raw relationship between the points variable and other variables in the data
+
+
+```{r}
+library(ggplot2)
+library(gridExtra)
+
+ggp1 <- ggplot(learning2014, aes(x=Age, y=Points)) + 
+  geom_point()+
+  geom_smooth(method=lm, color = "grey30", fill = "darkorange")
+
+ggp2 <- ggplot(learning2014, aes(x=Surf, y=Points)) + 
+  geom_point()+
+  geom_smooth(method=lm, color = "grey30", fill = "darkorange")
+
+ggp3 <- ggplot(learning2014, aes(x=Attitude, y=Points)) + 
+  geom_point()+
+  geom_smooth(method=lm, color = "grey30", fill = "darkorange")
+
+ggp4 <- ggplot(learning2014, aes(x=Stra, y=Points)) + 
+  geom_point()+
+  geom_smooth(method=lm, color = "grey30", fill = "darkorange")
+
+ggp5 <- ggplot(learning2014, aes(x=Deep, y=Points)) + 
+  geom_point()+
+  geom_smooth(method=lm, color = "grey30", fill = "darkorange")
+
+grid.arrange(ggp1, ggp2, ggp3,  ggp4,  ggp5, ncol = 2)
+
+```
+
+The figure above shows the relationship between points variables and five other variables in the data. The figure hints that the exam points are positively associated with variables attitude and stra. In other words, individuals with higher attitudes and stra scores tend to do better in the exam. The scatterplots and the lines I fit on the top of the dots suggest that the association between attitude and exam score is more robust than the association between stra and exam scores. 
+
+On the contrary, the correlations between exam points and variables age, surf, and deep are either negative or zero. The figure provides strong suggestive evidence that there is no relationship between exam points and deep variables. However, the surf and age variables might be negatively associated with exam points. 
+
+### 3. Data analysis 
+
+I decide to pick the following three variables: attitude, stra, and age. I then fit the linear OLS regression model
+```{r}
+linearMod <- lm(Points ~ Attitude + Stra +  Surf , data=learning2014)  
+summary(linearMod)
+
+```
+
+Summary of the regression analysis results shows the variables attitude and Stra are positively associated with exam points while the surf variable has a negative relationship with exam performance. However, the summary also reveals that only the attitude regression coefficient is statistically significant at a 95 percent confidence level, although based on the F-statistic, all the variables are jointly significant. In any case, I only keep the attitude variable and re-run the analysis. 
+
+```{r}
+linearMod <- lm(Points ~ Attitude , data=learning2014)  
+summary(linearMod)
+```
+
+### 4. Interpretation of results
+We get relatively similar results with the model that includes just the attitude variables. The regression coefficient of the attitude variable and the fit of the model are smaller, but differences are tiny. There are a couple of ways to interpret the model. First, the regressor's coefficient tells us how much does the expected exam score increases on average if the attitude score increases by one point. Hence, our model says that if the attitude score increases by 1 point expected exam score should increase by 3.5 points. Also, using the intercept term and regression coefficient together, we can calculate what the expected exam score conditional on an individual's attitude score.
+
+Second, R2 or the fit of the model tells us how large share in the variance of the exam points is explained by our model. In my case, R squared is around 0.185, meaning that around 18 percent of the variance in the exam scores can be explained by the model i.e attitude scores. Hence, considering that we are doing social science where models have relatively low fit compared to, for example, natural sciences, the attitude seems to do well at predicting exam scores.   
+
+### 5. Diagnostic plots
+
+The model's coefficient presented above can be interpreted as the best linear unbiased estimate, and the statistical tests that I examined are valid if the following conditions hold. 
+
+1. Linearity
+2. Strict exogeneity
+3. No perfect multicollinearity 
+4. Constant variance 
+5. The error term ε is normally distributed
+
+We can evaluate some of these assumptions by looking at some diagnostic plots that were asked for. Let us plot these figures
+
+```{r}
+
+plot(lm(Points ~Attitude , data=learning2014))
+```
+
+### 5.1. Residuals vs Fitted values
+
+The first figure plots relationship between the residuals of the model and fitted values. We get fitted value by using our model to predict the value of the outcome variable, whereas residual is the difference between the fitted value and observed value. The residuals vs fitted value figure can be used to evaluate whether the linearity or constant variance assumptions hold. If the assumptions hold, the dots in the figure should be evenly distributed around the horizontal line. However, the figure seems to the point that, on average, dots get closer to the line at the larger fitted values.  
+
+### 5.2. Normal QQ-plot
+
+In the previous part of the exercise, we were using t-statistics and F-statistics to evaluate if our estimates were statistically significant. In a small sample, this is a valid approach if the error term of the model is normally distributed. In the second figure above, we are evaluating whether the normality assumption holds by comparing theoretical normal distribution to the observed distribution of residuals. If these distributions are entirely similar, all dots should along a 45-degree line that goes through the graph. In our case, some dots in the lowest and highest decile are off the line, indicating that the error term's distribution is a bit skewed. 
+
+### 5.3. Residuals vs Leverage
+
+Finally, we want to check whether there are any influential outlier observations that might significantly impact estimates. OLS estimator finds an estimate that minimizes the sum of squared residuals of the model. Because residuals are squared, the outliers that are far away from other observations might significantly impact estimates and create bias. In the last figure, we test how influential every single observation is. Based on the figure, it turns out that outliers do not seem to be a big problem. 
+
+
