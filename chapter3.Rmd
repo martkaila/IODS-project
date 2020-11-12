@@ -1,0 +1,266 @@
+# Chapter 3
+
+Today is 
+```{r}
+date()
+```
+
+### 1. Create a new R Markdown file
+
+Done!
+
+### 2. Read the joined student alcohol consumption data and provide description 
+Let's start by reading the data in R. 
+
+```{r}
+joinedData <- read.csv("/Users/marttikaila/IODS-project/data/joinedData.csv",row.names = 1)
+```
+
+Let's star by providing glimpse to our data 
+```{r}
+library(dplyr)
+glimpse(joinedData) 
+```
+
+So we have 382 separate observations and 35 variables measuring different things. The data have roughly two categories of variables. First, there are variables measuring background characteristics that only related to individual. These are, for example, individual's sex, age, school performance and alcohol consumption. Second, there are variables that are related to individuals parental background. These are, for example, family size, parents' cohabitation status, and parental education status.
+
+
+```{r}
+summary(joinedData)
+```
+
+### 3. Choose the variables 
+
+
+I pick the following four variables:
+
+1. Student's sex
+  + Hypothesis: There is a lot of evidence that males have a higher inclination to engage in risky behavior such as binge drinking. It is fascinating to see whether this holds up in the data in use.
+2. Age
++ Hypothesis: Since most countries have legal drinking age, age affects the availability of alcohol, and hence, maybe drinking. 
+3. Father's education
++ Hypothesis: Father's education could work as a proxy for socioeconomic status (ses). Apparently, especially binge/heavy drinking is associated with low ses. Thus, I investigate whether the father's low ses is related to the child's alcohol consumption. 
+4. Absences
++ Hypothesis: Schools might have an incapacitation effect on alcohol consumption. This means that at least while children are in school during the day time, they can not consume alcohol.  On the other, students may be absent since they drink too much alcohol. Thus, the direction of causality is unclear. 
+
+Let's create the data that contain only these independent variables and then alcohol related outcomes. 
+
+```{r, message=FALSE}
+library(tidyr); library(dplyr); library(ggplot2); library(GGally)
+
+analysisAlc <- joinedData %>%
+  select(sex, age, Fedu, absences, high_use)
+
+analysisAlc$Fedu <- cut(analysisAlc$Fedu, breaks = c(-Inf, 0, 1, 2, 3, Inf), labels= c("None", "primaryLow", "primaryHigh", "secondary", "Tertiary")  )
+
+analysisAlc$Fedu <- factor(analysisAlc$Fedu)
+
+summary(analysisAlc)
+
+```
+### 4. Descriptive evidence
+#### 4.1 Histograms
+
+```{r, warning=FALSE, message = FALSE}
+library(tidyr); library(dplyr); library(ggplot2); library(GGally)
+
+gather(analysisAlc) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar()
+
+```
+
+Based on the histogram, around 1/3 of the sample are high users of alcohol. Otherwise, the sample individuals are relatively young, and their fathers are somewhat educated. Few individuals are 19-21 years old. If these individuals are in the sample because of school retention, any associations we find between age and heavy drinking may be explained by other unobserved problems that are behind the school retention.  The distribution of absences is very skewed. On the one hand, there are a lot of individuals who are almost never absent, and on the other hand, quite many individuals whose absence numbers are high. 
+
+#### 4.2 Boxplots
+```{r}
+library(tidyr); library(dplyr); library(ggplot2); library(GGally)
+
+box1 <- ggplot(analysisAlc, aes(x = high_use  , y = absences, col = Fedu ))
+
+box1 + geom_boxplot() + ylab("Absences")
+
+```
+
+Boxplots are showing many descriptive statistics of absences and age variables for high and low alcohol consumption groups. The line, which is in the middle of the box, reports the median value of the variable on the y-axis. The different boxes within the same box represent different sub-groups.
+
+We can maybe see from the first figure that the median number of absences is larger among high alcohol users. This is in line with my fourth assumption. However, the first box figure also shows that fathers education does not seem to be related to 
+
+```{r}
+library(tidyr); library(dplyr); library(ggplot2); library(GGally)
+
+box1 <- ggplot(analysisAlc, aes(x = high_use  , y = age, col =  Fedu  ))
+
+box1 + geom_boxplot() + ylab("age")
+
+```
+
+
+The second box figure provides some evidence that the median age is higher among high alcohol users.  The figure also points out that there is no relationship between age and father's education. This is in line with my second assumption.
+
+#### 4.3 Cross tabulation
+```{r, message=FALSE}
+library(tidyr); library(dplyr); library(ggplot2);  library(knitr)
+
+analysisAlc %>%
+  group_by(Fedu, high_use) %>%
+  summarise(n=n()) %>%
+  spread(high_use, n) %>%
+  kable()
+analysisAlc %>%
+  group_by(Fedu) %>%
+  summarise(mean_high_use=mean(high_use)) %>%
+  kable()
+
+```
+The first table shows the number of high and low alcohol users by the father's educational background. The second table shows the fraction of high alcohol users by the father's educational background. Together the tables provide evidence that there is no relationship between high alcohol use and parental education. This is against my hypothesis. 
+
+```{r, message=FALSE}
+library(tidyr); library(dplyr); library(ggplot2);  library(knitr)
+
+analysisAlc %>%
+  group_by(sex, high_use) %>%
+  summarise(n=n()) %>%
+  spread(high_use, n) %>%
+  kable()
+
+analysisAlc %>%
+  group_by(sex) %>%
+  summarise(mean_high_use=mean(high_use)) %>%
+  kable()
+
+```
+Based on tables 3 and 4, it seems that high alcohol use is more common among males, which supports my first assumption. 
+ 
+
+
+## 5. Logistic regression
+
+Let us fit the model and summarize the results
+```{r, warning=FALSE}
+
+
+model <- glm(high_use ~ sex + absences + age + Fedu,  data = analysisAlc, family = "binomial")
+
+# summarize the model 
+summary(model)
+coef(model)
+```
+
+We find that all the coefficients are positive, meaning that if an individual is a male, age increases, or the number of absences increases, the probability of high alcohol consumption increases. However, not that the effect of age is not significant. Also, it isn't easy to interpret what is the impact of a father's education. However, we can at least conclude that it is not statistically significant. 
+
+In order to talk say something more than what is the direction of efffect, let us derive odds ratios for the variables. 
+
+```{r, warning=FALSE}
+# Let's get the odds ratios an the confidence intervals 
+OR <- coef(model) %>% exp
+CI <- confint(model) %>% exp
+
+cbind(OR, CI)
+
+```
+
+Based on the Confidence intervals age variable is not statistically significant. Also, it seems that the father's educational background variable is problematic since there is no variation in our outcome variable in some of the education categories. Hence, I drop these two variables and fit the model again. 
+
+
+```{r, warning=FALSE}
+# Let's get the odds ratios an the confidence intervals 
+
+
+model2 <- glm(high_use ~ sex + absences,  data = analysisAlc, family = "binomial")
+
+OR <- coef(model2) %>% exp
+CI <- confint(model2) %>% exp
+
+cbind(OR, CI)
+
+```
+
+Now we find that that odds ratio for the male indicator is statistically significant and takes a value 2.6. Interpretation of this is that if a person is a male, the odds of high alcohol consumption is 2.6 times greater when absences are held constant. 
+
+The interpretation of the absences' odds ratio coefficient is a bit different because it is a continuous measure. The odds ratio takes value 1.1 and means that if absences increase by one, the odds of high alcohol usage increases by a factor of 1.1. This implies that if absences increase by  n times, the odd of high alcohol usage increases by 1.1^n
+
+Hence, the statistical model seems to confirm two of my hypothesis and reject the other two.  However, it is essential to keep in mind that all relationships found above are associations and not causal. 
+
+
+## 6.Predictions 
+
+#### 6.1 Tables and figures 
+
+```{r, warning=FALSE}
+library(dplyr); library(ggplot2); library(visreg); library(caret); library(sjlabelled)
+
+model2 <- glm(high_use ~ sex + absences, data = analysisAlc, family = "binomial")
+
+# Create propensity score
+probs <- predict(model2, type = "response")
+
+# Add propensity score back to the data 
+analysisAlc<- mutate(analysisAlc, probability = probs)
+
+# Use propebsity scores to predict  high_use
+analysisAlc <- mutate(analysisAlc, prediction = probability > 0.5)
+
+# Lets summarize and tabulate the high_use variable and our prediction. 
+table(high_use = analysisAlc$high_use, prediction = analysisAlc$prediction)
+
+table(high_use = analysisAlc$high_use, prediction = analysisAlc$prediction) %>%
+    prop.table() %>% addmargins
+
+
+# initialize a plot of 'high_use' versus 'probability' in 'alc'
+g <- ggplot(analysisAlc, aes(x = probability, y = high_use , col = prediction))
+g +  geom_point()
+```
+
+Based on the figure and confusion matrix, it seems that our model produces quite many false-negative predictions meaning that our model says that the person is not a high user of alcohol when the person actually is a high user. 
+
+Let me also draw these cool figures that show how the marginal probability of high user evolves as a function of absences and how this relationship varies between gender.
+
+
+
+```{r, warning=FALSE}
+# define the geom as points and draw the plot
+
+
+
+visreg(model2 , "absences", 
+       gg = TRUE, 
+       scale="response") +
+  labs(y = "Prob(High Use)", 
+       x = "absences",
+       title = "Relationship of absences and High Use",
+       subtitle = "controlling for sex"
+       )
+
+visreg(model2 , "absences", 
+       gg = TRUE, 
+       by = "sex",
+       scale="response") +
+  labs(y = "Prob(High Use)", 
+       x = "absences",
+       title = "Relationship of absences and High Use",
+       subtitle = "controlling for sex"
+       )
+
+
+
+```
+
+#### 6.2 Prediction errors 
+
+```{r, warning=FALSE}
+
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+loss_func(class = analysisAlc$high_use, prob = analysisAlc$probability)
+
+```
+
+It seems that 25 percent of our predictions are wrong. Let's compare this to a strategy in which we say that every third person is a high alcohol user.
+
+```{r, warning=FALSE}
+
+loss_func(class = analysisAlc$high_use, prob = 0.333)
+```
+With this model, around 1/3 of our predictions are wrong. Hence, the proper statistical model does just a little bit better than the random guessing strategy.

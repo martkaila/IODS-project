@@ -7,9 +7,13 @@
 #install.packages("dplyr")
 #install.packages("viridis")
 #install.packages("forcats")
-#install.packages("gridExtra") 
+#install.packages("gridExtra")
+install.packages("visreg")
+install.packages("visreg")
 
 
+
+library(visreg)
 library("gridExtra")    
 library(tidyverse)
 library(ggplot2)
