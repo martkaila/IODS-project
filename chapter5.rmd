@@ -1,0 +1,51 @@
+# Chapter 5
+
+Today is 
+```{r}
+date()
+```
+
+## 1. Descriptive Statistics 
+
+Let us get the data and summarize it 
+```{r, warning=FALSE, message = FALSE}
+library(tidyr); library(dplyr); library(ggplot2); library(GGally)
+
+human <- read.csv("/Users/marttikaila/IODS-project/data/human.csv",row.names = 1)
+
+ggpairs(human, lower=list(continuous="smooth")) + theme_bw()
+
+summary(human)
+
+
+```
+
+Basd on the scatter plots presented above, it is clear that there seems to some very strong associations between variables. For example, expected years of schooling (eduExp) is very positively correlated with everything except ratio of female and male labor force participation rates. It is sort of interesting that ratio of female and male labor force participation rates (LaborFM), has relatively weak association with all other variables in data. 
+
+Otherwise, it seems that most of the variables in the data are quite skewed either to left or right. For example, most of the countries have low maternal mortality ratio and high life expectancy. 
+
+
+## 2. Perform principal component analysis
+```{r, warning=FALSE, message = FALSE}
+pcaHuman <- prcomp(human)
+pcaHuman$rotation
+biplot(pcaHuman, choices = 1:2)
+```
+
+## 3. Standardize the variables and perform the PCA again
+```{r, warning=FALSE, message = FALSE}
+humanStand <- scale(human)
+pcaHumanStand <- prcomp(humanStand)
+pcaHumanStand$rotation
+biplot(pcaHumanStand, choices = 1:2)
+
+```
+
+Clearly the are very different. This arises from the fact that GNI has a very high variance, and hence almost all weight in the first principal component (PCA1) is going on the GNI. However, after we scale all the variable, much more reasonable picture emerges. Now multiple variables contribute to the first principal component and a couple of variables to the second component. 
+
+## 4). Interpretations of the first two principal components
+### 4.1). The first principal component
+Based on the figures and tables, first principal component is negatively correlated with gni, life expectancy at birth, expected years of schooling and proportion of females with at least secondary education. It positively associated with maternal mortality ratio adolescent birth rate. This component can be seen as as measures of country's underdevelopness , which is negatively correlated with things that we can classify as "good" and positively correlated things we can regard as bad. 
+
+### 4.1). The second principal component
+Second principal component is mainly and very heavily positively correlated with  the percentage of female representatives in parliament and the ratio of female and labor labor force partishipaiton rates. This component - which is orthogonal to the first element, can be seen as a measurment of gender equality. 
