@@ -1,0 +1,21 @@
+# Chapter 6
+
+Today is 
+```{r}
+date()
+```
+
+In the first part of this week's exercise week are going to replicate analysis presentend in the chapter 8 of Kimmo's book. 
+
+Let us get the data and summarize it 
+```{r, warning=FALSE, message = FALSE}
+library(tidyr); library(dplyr); library(ggplot2); library(GGally)
+
+RATS <- read.csv("/Users/marttikaila/IODS-project/data/RATSData.csv",row.names = 1)
+
+glimpse(RATS)
+
+summary(RATS)
+
+
+```
